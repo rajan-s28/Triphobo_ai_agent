@@ -2,231 +2,115 @@
 <html>
 
 <head>
-    <title>Vapi Voice Assistant</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .avatar-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        #avatar {
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .controls {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            margin: 0 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-
-        button:hover {
-            background: #45a049;
-        }
-
-        button:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-        }
-
-        .stop-btn {
-            background: #f44336;
-        }
-
-        .stop-btn:hover {
-            background: #da190b;
-        }
-
-        .status {
-            text-align: center;
-            margin: 20px 0;
-            padding: 10px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-
-        .status.connected {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .status.disconnected {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .transcript-container {
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            max-height: 500px;
-            overflow-y: auto;
-            background: #1a1a1a;
-            padding: 20px;
-            scroll-behavior: smooth;
-        }
-
-        .chat-message {
-            margin-bottom: 20px;
-            display: flex;
-            align-items: flex-start;
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        .chat-message.user {
-            justify-content: flex-end;
-        }
-
-        .chat-message.assistant {
-            justify-content: flex-start;
-        }
-
-        .message-bubble {
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            position: relative;
-            word-wrap: break-word;
-        }
-
-        .user .message-bubble {
-            background: #007bff;
-            color: white;
-            border-bottom-right-radius: 5px;
-        }
-
-        .assistant .message-bubble {
-            background: #2d2d2d;
-            color: #00d4aa;
-            border-bottom-left-radius: 5px;
-            border: 1px solid #444;
-        }
-
-        .message-header {
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            opacity: 0.8;
-        }
-
-        .user .message-header {
-            color: #b3d9ff;
-        }
-
-        .assistant .message-header {
-            color: #00d4aa;
-        }
-
-        .message-text {
-            line-height: 1.4;
-            font-size: 14px;
-        }
-
-        .message-time {
-            font-size: 11px;
-            opacity: 0.6;
-            margin-top: 5px;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
+    <title>TripHobo AI Travel Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'triphobo-blue': '#0f4c75',
+                        'triphobo-light': '#3282b8',
+                        'triphobo-green': '#52c41a'
+                    }
+                }
             }
         }
-
-        .debug-toggle {
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .debug-logs {
-            background: #1e1e1e;
-            color: #00ff00;
-            padding: 15px;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            display: none;
-        }
-    </style>
+    </script>
 </head>
 
-<body>
-    <div class="container">
-        <h1>Hi, I'm Maya!</h1>
+<body class="bg-gradient-to-br from-triphobo-blue via-triphobo-light to-triphobo-blue min-h-screen">
 
-        <div class="avatar-container">
-            <img id="avatar" src="" alt="AI Avatar">
+    <!-- Header -->
+    <header class="bg-white/95 backdrop-blur-sm shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl">🏝️</span>
+                <h1 class="text-2xl font-bold text-triphobo-blue">TripHobo AI</h1>
+            </div>
+            <div class="flex space-x-4">
+                <button
+                    class="px-4 py-2 border-2 border-triphobo-blue text-triphobo-blue rounded-lg hover:bg-triphobo-blue hover:text-white transition-all">
+                    Log in
+                </button>
+                <button class="px-4 py-2 bg-triphobo-green text-white rounded-lg hover:bg-green-600 transition-all">
+                    Sign up
+                </button>
+            </div>
         </div>
+    </header>
 
-        <div class="controls">
-            <button id="startBtn" onclick="startCall()">Start Conversation</button>
-            <button id="stopBtn" class="stop-btn" onclick="stopCall()" disabled>Stop Conversation</button>
-        </div>
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[calc(100vh-120px)]">
 
-        <div id="status" class="status disconnected">Disconnected</div>
+            <!-- Left Side - Avatar & Controls -->
+            <div class="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center justify-center">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-triphobo-blue mb-4">Hi, I'm Maya!</h2>
+                    <p class="text-gray-600 text-lg">Your AI travel planning assistant</p>
+                </div>
 
-        <h3>Call Transcript</h3>
-        <div class="transcript-container">
-            <div id="transcript">
-                <div class="chat-message assistant">
-                    <div class="message-bubble">
-                        <div class="message-header">Assistant</div>
-                        <div class="message-text">Hi! I'm ready to help you. Click "Start Conversation" to begin.</div>
-                        <div class="message-time">Ready to start</div>
+                <!-- Avatar -->
+                <div class="mb-8">
+                    <img id="avatar" src="" alt="Maya AI Assistant"
+                        class="w-48 h-48 rounded-full border-4 border-triphobo-green shadow-xl object-cover hover:scale-105 transition-transform">
+                </div>
+
+                <!-- Controls -->
+                <div class="flex flex-col space-y-4 w-full max-w-sm">
+                    <button id="startBtn" onclick="startCall()"
+                        class="bg-gradient-to-r from-triphobo-green to-green-500 text-white font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all">
+                        🎙️ Start Conversation
+                    </button>
+                    <button id="stopBtn" onclick="stopCall()" disabled
+                        class="bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                        ⏹️ Stop Conversation
+                    </button>
+                </div>
+
+                <!-- Status -->
+                <div id="status"
+                    class="mt-6 px-6 py-3 rounded-full font-semibold text-center w-full max-w-sm bg-red-100 text-red-800 border border-red-200">
+                    Ready to help you plan your adventure
+                </div>
+
+                <!-- Debug Toggle -->
+                <button onclick="toggleDebug()" class="mt-6 text-sm text-gray-500 hover:text-gray-700 underline">
+                    Toggle Debug Logs
+                </button>
+            </div>
+
+            <!-- Right Side - Conversation -->
+            <div class="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+                <!-- Chat Header -->
+                <div class="bg-gradient-to-r from-triphobo-blue to-triphobo-light text-white p-6">
+                    <h3 class="text-xl font-bold flex items-center">
+                        💬 Conversation with Maya
+                    </h3>
+                </div>
+
+                <!-- Chat Messages -->
+                <div class="flex-1 overflow-y-auto p-6 bg-gray-50" id="transcript-container">
+                    <div id="transcript" class="space-y-4">
+                        <!-- Initial message -->
+                        <div class="chat-message assistant flex justify-start">
+                            <div
+                                class="message-bubble max-w-xs lg:max-w-md px-4 py-3 rounded-2xl rounded-bl-md bg-white border border-gray-200 shadow-sm">
+                                <div class="message-header text-xs font-semibold text-triphobo-green mb-1">Maya</div>
+                                <div class="message-text text-sm text-gray-800">Hi there! Click "Start Conversation" and
+                                    tell me about your dream trip. Where would you like to go? 🌟</div>
+                                <div class="message-time text-xs text-gray-500 mt-2">Ready to start</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="debug-toggle">
-            <button onclick="toggleDebug()">Toggle Debug Logs</button>
-        </div>
-        <div id="debugLogs" class="debug-logs"></div>
+        <!-- Debug Logs -->
+        <div id="debugLogs"
+            class="hidden mt-6 bg-black text-green-400 p-4 rounded-lg font-mono text-sm max-h-64 overflow-y-auto"></div>
     </div>
 
     <script type="module">
@@ -237,16 +121,17 @@
         let outputWorkletNode;
         let inputWorkletNode;
         let assistantSpeakingTimeout;
-        let isAssistantSpeaking = false; // Track speaking state to avoid GIF reloading
+        let isAssistantSpeaking = false;
 
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const statusEl = document.getElementById('status');
         const transcriptEl = document.getElementById('transcript');
+        const transcriptContainer = document.getElementById('transcript-container');
         const debugLogsEl = document.getElementById('debugLogs');
 
         const avatarImg = document.getElementById('avatar');
-        const animatedAvatarSrc = "/static/img/avatar3.gif";
+        const animatedAvatarSrc = "/static/img/avatar2.gif";
         const staticAvatarSrc = "/static/img/avatar_static_2.png";
 
         if (avatarImg) {
@@ -255,28 +140,38 @@
 
         window.updateStatus = function (message, connected = false) {
             statusEl.textContent = message;
-            statusEl.className = `status ${connected ? 'connected' : 'disconnected'}`;
+            if (connected) {
+                statusEl.className = 'mt-6 px-6 py-3 rounded-full font-semibold text-center w-full max-w-sm bg-green-100 text-green-800 border border-green-200';
+            } else {
+                statusEl.className = 'mt-6 px-6 py-3 rounded-full font-semibold text-center w-full max-w-sm bg-red-100 text-red-800 border border-red-200';
+            }
             startBtn.disabled = connected;
             stopBtn.disabled = !connected;
         }
 
         window.addToTranscript = function (role, text, timestamp = null) {
             const chatMessage = document.createElement('div');
-            chatMessage.className = `chat-message ${role}`;
+            chatMessage.className = `chat-message ${role} flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
 
             const messageBubble = document.createElement('div');
-            messageBubble.className = 'message-bubble';
+            messageBubble.className = `message-bubble max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${role === 'user'
+                    ? 'rounded-br-md bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                    : 'rounded-bl-md bg-white border border-gray-200'
+                }`;
 
             const messageHeader = document.createElement('div');
-            messageHeader.className = 'message-header';
-            messageHeader.textContent = role === 'user' ? 'You' : 'Assistant';
+            messageHeader.className = `message-header text-xs font-semibold mb-1 ${role === 'user' ? 'text-blue-100' : 'text-triphobo-green'
+                }`;
+            messageHeader.textContent = role === 'user' ? 'You' : 'Maya';
 
             const messageText = document.createElement('div');
-            messageText.className = 'message-text';
+            messageText.className = `message-text text-sm ${role === 'user' ? 'text-white' : 'text-gray-800'
+                }`;
             messageText.textContent = text;
 
             const messageTime = document.createElement('div');
-            messageTime.className = 'message-time';
+            messageTime.className = `message-time text-xs mt-2 ${role === 'user' ? 'text-blue-200' : 'text-gray-500'
+                }`;
             messageTime.textContent = timestamp || new Date().toLocaleTimeString();
 
             messageBubble.appendChild(messageHeader);
@@ -287,7 +182,7 @@
             transcriptEl.appendChild(chatMessage);
 
             setTimeout(() => {
-                transcriptEl.scrollTo({ top: transcriptEl.scrollHeight, behavior: 'smooth' });
+                transcriptContainer.scrollTo({ top: transcriptContainer.scrollHeight, behavior: 'smooth' });
             }, 100);
         }
 
@@ -306,19 +201,17 @@
 
         window.toggleDebug = function () {
             showDebug = !showDebug;
-            debugLogsEl.style.display = showDebug ? 'block' : 'none';
+            debugLogsEl.classList.toggle('hidden', !showDebug);
         }
 
         function setAvatarSpeaking(speaking) {
             if (speaking && !isAssistantSpeaking) {
-                // Start speaking - change to animated only if not already speaking
                 isAssistantSpeaking = true;
                 if (avatarImg) {
                     avatarImg.src = animatedAvatarSrc;
                 }
                 debugLog("Avatar started speaking animation");
             } else if (!speaking && isAssistantSpeaking) {
-                // Stop speaking
                 isAssistantSpeaking = false;
                 if (avatarImg) {
                     avatarImg.src = staticAvatarSrc;
@@ -362,7 +255,7 @@
 
         window.startCall = async function () {
             try {
-                updateStatus("Connecting...", false);
+                updateStatus("Connecting to Maya...", false);
                 debugLog("Initiating call request");
 
                 const res = await fetch("/make_call");
@@ -383,10 +276,10 @@
 
                 socket.onopen = async () => {
                     debugLog("WebSocket connection opened");
-                    updateStatus("Connected - Starting microphone...", true);
+                    updateStatus("Setting up microphone...", true);
                     try {
                         await setupAudioWorklets();
-                        updateStatus("Connected - Listening...", true);
+                        updateStatus("Maya is listening... Start talking!", true);
                     } catch (micError) {
                         debugLog("Audio setup error", micError);
                         updateStatus(`Error: ${micError.message}`, false);
@@ -411,12 +304,12 @@
 
                 socket.onerror = (error) => {
                     debugLog("WebSocket error", error);
-                    updateStatus("Connection error", false);
+                    updateStatus("Connection error - please try again", false);
                 };
 
                 socket.onclose = (event) => {
                     debugLog("WebSocket closed", { code: event.code, reason: event.reason });
-                    updateStatus("Disconnected", false);
+                    updateStatus("Ready to help you plan your adventure", false);
                     cleanup();
                 };
 
@@ -431,14 +324,11 @@
 
             switch (msg.type) {
                 case 'speech-update':
-                    // Use speech-update events for smoother avatar control
                     if (msg.role === 'assistant') {
                         if (msg.status === 'started') {
                             setAvatarSpeaking(true);
-                            // Clear any existing timeout
                             clearTimeout(assistantSpeakingTimeout);
                         } else if (msg.status === 'stopped') {
-                            // Add a small delay before stopping animation to avoid flickering
                             clearTimeout(assistantSpeakingTimeout);
                             assistantSpeakingTimeout = setTimeout(() => {
                                 setAvatarSpeaking(false);
@@ -448,7 +338,6 @@
                     break;
 
                 case 'transcript':
-                    // Only handle final transcripts for transcript display
                     if (msg.transcriptType === 'final' && msg.transcript) {
                         const role = msg.role === 'user' ? 'user' : 'assistant';
                         addToTranscript(role, msg.transcript);
@@ -474,9 +363,8 @@
                 socket.close();
             }
             cleanup();
-            updateStatus("Disconnected", false);
+            updateStatus("Ready to help you plan your adventure", false);
 
-            // Reset avatar state
             setAvatarSpeaking(false);
             clearTimeout(assistantSpeakingTimeout);
         }
