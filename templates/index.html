@@ -237,6 +237,7 @@
         let outputWorkletNode;
         let inputWorkletNode;
         let assistantSpeakingTimeout;
+        let isAssistantSpeaking = false; // Track speaking state to avoid GIF reloading
 
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
@@ -245,7 +246,7 @@
         const debugLogsEl = document.getElementById('debugLogs');
 
         const avatarImg = document.getElementById('avatar');
-        const animatedAvatarSrc = "/static/img/avatar2.gif";
+        const animatedAvatarSrc = "/static/img/avatar3.gif";
         const staticAvatarSrc = "/static/img/avatar_static_2.png";
 
         if (avatarImg) {
@@ -306,6 +307,24 @@
         window.toggleDebug = function () {
             showDebug = !showDebug;
             debugLogsEl.style.display = showDebug ? 'block' : 'none';
+        }
+
+        function setAvatarSpeaking(speaking) {
+            if (speaking && !isAssistantSpeaking) {
+                // Start speaking - change to animated only if not already speaking
+                isAssistantSpeaking = true;
+                if (avatarImg) {
+                    avatarImg.src = animatedAvatarSrc;
+                }
+                debugLog("Avatar started speaking animation");
+            } else if (!speaking && isAssistantSpeaking) {
+                // Stop speaking
+                isAssistantSpeaking = false;
+                if (avatarImg) {
+                    avatarImg.src = staticAvatarSrc;
+                }
+                debugLog("Avatar stopped speaking animation");
+            }
         }
 
         async function setupAudioWorklets() {
@@ -409,28 +428,38 @@
 
         function handleJsonMessage(msg) {
             debugLog("Received JSON message", msg);
+
             switch (msg.type) {
-                case 'transcript':
+                case 'speech-update':
+                    // Use speech-update events for smoother avatar control
                     if (msg.role === 'assistant') {
-                        if (avatarImg.src !== animatedAvatarSrc) {
-                            avatarImg.src = animatedAvatarSrc;
+                        if (msg.status === 'started') {
+                            setAvatarSpeaking(true);
+                            // Clear any existing timeout
+                            clearTimeout(assistantSpeakingTimeout);
+                        } else if (msg.status === 'stopped') {
+                            // Add a small delay before stopping animation to avoid flickering
+                            clearTimeout(assistantSpeakingTimeout);
+                            assistantSpeakingTimeout = setTimeout(() => {
+                                setAvatarSpeaking(false);
+                            }, 500);
                         }
-                        clearTimeout(assistantSpeakingTimeout);
-                        assistantSpeakingTimeout = setTimeout(() => {
-                            if (avatarImg) {
-                                avatarImg.src = staticAvatarSrc;
-                            }
-                        }, 1000);
                     }
+                    break;
+
+                case 'transcript':
+                    // Only handle final transcripts for transcript display
                     if (msg.transcriptType === 'final' && msg.transcript) {
                         const role = msg.role === 'user' ? 'user' : 'assistant';
                         addToTranscript(role, msg.transcript);
                     }
                     break;
+
                 case 'error':
                     debugLog("Error message received", msg);
                     updateStatus(`Error: ${msg.message || 'Unknown error'}`, false);
                     break;
+
                 default:
                     break;
             }
@@ -446,10 +475,10 @@
             }
             cleanup();
             updateStatus("Disconnected", false);
-            if (avatarImg) {
-                avatarImg.src = staticAvatarSrc;
-                clearTimeout(assistantSpeakingTimeout);
-            }
+
+            // Reset avatar state
+            setAvatarSpeaking(false);
+            clearTimeout(assistantSpeakingTimeout);
         }
 
         function cleanup() {
@@ -473,6 +502,7 @@
                 });
             }
             socket = null;
+            isAssistantSpeaking = false;
             debugLog("Cleanup completed");
         }
 
