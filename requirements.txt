@@ -1,5 +1,6 @@
 fastapi==0.111.0
 uvicorn==0.29.0
 websockets==12.0
-# VAPI_API_KEY = "176ce583-8530-4b59-ac58-ccc578aeff94"  # Replace with your Vapi API key
-# VAPI_ASSISTANT_ID = "f22fd8d1-f674-4ccd-a677-f6e1feaf2af5" # Replace with your assistant ID
+aiohttp
+logging
+python-dotenv==1.0.0
