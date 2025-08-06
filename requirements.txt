@@ -1,6 +1,6 @@
-fastapi==0.111.0
-uvicorn==0.29.0
-websockets==12.0
+fastapi
+uvicorn
+websockets
 aiohttp
 logging
-python-dotenv==1.0.0
+python-dotenv

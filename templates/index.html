@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Vapi Voice Assistant</title>
     <style>
@@ -10,21 +11,37 @@
             padding: 20px;
             background-color: #f5f5f5;
         }
+
         .container {
             background: white;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+
         h1 {
             color: #333;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
+
+        .avatar-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #avatar {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
         .controls {
             text-align: center;
             margin-bottom: 30px;
         }
+
         button {
             background: #4CAF50;
             color: white;
@@ -36,19 +53,24 @@
             font-size: 16px;
             transition: background 0.3s;
         }
+
         button:hover {
             background: #45a049;
         }
+
         button:disabled {
             background: #cccccc;
             cursor: not-allowed;
         }
+
         .stop-btn {
             background: #f44336;
         }
+
         .stop-btn:hover {
             background: #da190b;
         }
+
         .status {
             text-align: center;
             margin: 20px 0;
@@ -56,16 +78,19 @@
             border-radius: 5px;
             font-weight: bold;
         }
+
         .status.connected {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
+
         .status.disconnected {
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+
         .transcript-container {
             border: 1px solid #ddd;
             border-radius: 10px;
@@ -75,18 +100,22 @@
             padding: 20px;
             scroll-behavior: smooth;
         }
+
         .chat-message {
             margin-bottom: 20px;
             display: flex;
             align-items: flex-start;
             animation: fadeIn 0.3s ease-in;
         }
+
         .chat-message.user {
             justify-content: flex-end;
         }
+
         .chat-message.assistant {
             justify-content: flex-start;
         }
+
         .message-bubble {
             max-width: 70%;
             padding: 12px 16px;
@@ -94,46 +123,63 @@
             position: relative;
             word-wrap: break-word;
         }
+
         .user .message-bubble {
             background: #007bff;
             color: white;
             border-bottom-right-radius: 5px;
         }
+
         .assistant .message-bubble {
             background: #2d2d2d;
             color: #00d4aa;
             border-bottom-left-radius: 5px;
             border: 1px solid #444;
         }
+
         .message-header {
             font-size: 12px;
             font-weight: bold;
             margin-bottom: 5px;
             opacity: 0.8;
         }
+
         .user .message-header {
             color: #b3d9ff;
         }
+
         .assistant .message-header {
             color: #00d4aa;
         }
+
         .message-text {
             line-height: 1.4;
             font-size: 14px;
         }
+
         .message-time {
             font-size: 11px;
             opacity: 0.6;
             margin-top: 5px;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         .debug-toggle {
             margin: 20px 0;
             text-align: center;
         }
+
         .debug-logs {
             background: #1e1e1e;
             color: #00ff00;
@@ -148,10 +194,15 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🎤 Vapi Voice Assistant</h1>
-        
+
+        <div class="avatar-container">
+            <img id="avatar" src="" alt="AI Avatar">
+        </div>
+
         <div class="controls">
             <button id="startBtn" onclick="startCall()">Start Conversation</button>
             <button id="stopBtn" class="stop-btn" onclick="stopCall()" disabled>Stop Conversation</button>
@@ -185,53 +236,61 @@
         let showDebug = false;
         let outputWorkletNode;
         let inputWorkletNode;
+        let assistantSpeakingTimeout;
 
-        // UI Elements
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const statusEl = document.getElementById('status');
         const transcriptEl = document.getElementById('transcript');
         const debugLogsEl = document.getElementById('debugLogs');
 
-        window.updateStatus = function(message, connected = false) {
+        const avatarImg = document.getElementById('avatar');
+        const animatedAvatarSrc = "/static/img/avatar2.gif";
+        const staticAvatarSrc = "/static/img/avatar_static_2.png";
+
+        if (avatarImg) {
+            avatarImg.src = staticAvatarSrc;
+        }
+
+        window.updateStatus = function (message, connected = false) {
             statusEl.textContent = message;
             statusEl.className = `status ${connected ? 'connected' : 'disconnected'}`;
             startBtn.disabled = connected;
             stopBtn.disabled = !connected;
         }
 
-        window.addToTranscript = function(role, text, timestamp = null) {
+        window.addToTranscript = function (role, text, timestamp = null) {
             const chatMessage = document.createElement('div');
             chatMessage.className = `chat-message ${role}`;
-            
+
             const messageBubble = document.createElement('div');
             messageBubble.className = 'message-bubble';
-            
+
             const messageHeader = document.createElement('div');
             messageHeader.className = 'message-header';
             messageHeader.textContent = role === 'user' ? 'You' : 'Assistant';
-            
+
             const messageText = document.createElement('div');
             messageText.className = 'message-text';
             messageText.textContent = text;
-            
+
             const messageTime = document.createElement('div');
             messageTime.className = 'message-time';
             messageTime.textContent = timestamp || new Date().toLocaleTimeString();
-            
+
             messageBubble.appendChild(messageHeader);
             messageBubble.appendChild(messageText);
             messageBubble.appendChild(messageTime);
             chatMessage.appendChild(messageBubble);
-            
+
             transcriptEl.appendChild(chatMessage);
-            
+
             setTimeout(() => {
                 transcriptEl.scrollTo({ top: transcriptEl.scrollHeight, behavior: 'smooth' });
             }, 100);
         }
 
-        window.debugLog = function(message, data = null) {
+        window.debugLog = function (message, data = null) {
             const timestamp = new Date().toLocaleTimeString();
             let logMessage = `[${timestamp}] ${message}`;
             if (data) {
@@ -244,7 +303,7 @@
             console.log(logMessage, data);
         }
 
-        window.toggleDebug = function() {
+        window.toggleDebug = function () {
             showDebug = !showDebug;
             debugLogsEl.style.display = showDebug ? 'block' : 'none';
         }
@@ -252,21 +311,18 @@
         async function setupAudioWorklets() {
             if (!audioContext) {
                 audioContext = new AudioContext({ sampleRate: 16000 });
-                // The user must interact with the document before an AudioContext can be started.
                 await audioContext.resume();
             }
 
-            // Load and create the output worklet for playing audio
             await audioContext.audioWorklet.addModule('/static/js/audio-output-worklet.js');
             outputWorkletNode = new AudioWorkletNode(audioContext, 'audio-output-processor');
             outputWorkletNode.connect(audioContext.destination);
             debugLog('Audio output worklet is ready.');
 
-            // Load and create the input worklet for capturing microphone
             await audioContext.audioWorklet.addModule('/static/js/audio-input-worklet.js');
-            micStream = await navigator.mediaDevices.getUserMedia({ 
-                audio: { 
-                    sampleRate: 16000, 
+            micStream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    sampleRate: 16000,
                     channelCount: 1,
                     echoCancellation: true,
                     noiseSuppression: true
@@ -274,19 +330,18 @@
             });
             const micSourceNode = audioContext.createMediaStreamSource(micStream);
             inputWorkletNode = new AudioWorkletNode(audioContext, 'audio-input-processor');
-            
-            // Listen for messages from the input worklet (containing PCM data)
+
             inputWorkletNode.port.onmessage = (event) => {
                 if (socket && socket.readyState === WebSocket.OPEN) {
                     socket.send(event.data);
                 }
             };
-            
+
             micSourceNode.connect(inputWorkletNode);
             debugLog('Audio input worklet is ready and listening to microphone.');
         }
 
-        window.startCall = async function() {
+        window.startCall = async function () {
             try {
                 updateStatus("Connecting...", false);
                 debugLog("Initiating call request");
@@ -297,13 +352,13 @@
                     throw new Error(error.detail || "Failed to create call");
                 }
                 const data = await res.json();
-                
+
                 if (!data.url) {
                     throw new Error("No WebSocket URL received");
                 }
 
                 debugLog("Received WebSocket URL", { url: data.url });
-                
+
                 socket = new WebSocket(data.url);
                 socket.binaryType = "arraybuffer";
 
@@ -329,7 +384,6 @@
                             debugLog("JSON parse error", parseError);
                         }
                     } else if (event.data instanceof ArrayBuffer) {
-                        // Received audio data, send it to the output worklet for playback
                         if (outputWorkletNode) {
                             outputWorkletNode.port.postMessage(event.data);
                         }
@@ -357,6 +411,17 @@
             debugLog("Received JSON message", msg);
             switch (msg.type) {
                 case 'transcript':
+                    if (msg.role === 'assistant') {
+                        if (avatarImg.src !== animatedAvatarSrc) {
+                            avatarImg.src = animatedAvatarSrc;
+                        }
+                        clearTimeout(assistantSpeakingTimeout);
+                        assistantSpeakingTimeout = setTimeout(() => {
+                            if (avatarImg) {
+                                avatarImg.src = staticAvatarSrc;
+                            }
+                        }, 1000);
+                    }
                     if (msg.transcriptType === 'final' && msg.transcript) {
                         const role = msg.role === 'user' ? 'user' : 'assistant';
                         addToTranscript(role, msg.transcript);
@@ -367,12 +432,11 @@
                     updateStatus(`Error: ${msg.message || 'Unknown error'}`, false);
                     break;
                 default:
-                    // Handle other message types like 'conversation-update' if needed
                     break;
             }
         }
-        
-        window.stopCall = function() {
+
+        window.stopCall = function () {
             debugLog("Stopping call");
             if (socket) {
                 if (socket.readyState === WebSocket.OPEN) {
@@ -382,6 +446,10 @@
             }
             cleanup();
             updateStatus("Disconnected", false);
+            if (avatarImg) {
+                avatarImg.src = staticAvatarSrc;
+                clearTimeout(assistantSpeakingTimeout);
+            }
         }
 
         function cleanup() {
@@ -408,10 +476,10 @@
             debugLog("Cleanup completed");
         }
 
-        // Make functions globally accessible from inline onclick handlers
         window.startCall = startCall;
         window.stopCall = stopCall;
         window.toggleDebug = toggleDebug;
     </script>
 </body>
+
 </html>

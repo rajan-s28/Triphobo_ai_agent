@@ -1,5 +1,3 @@
-// static/js/audio-input-worklet.js
-
 class AudioInputProcessor extends AudioWorkletProcessor {
   process(inputs, outputs, parameters) {
     const input = inputs[0];
