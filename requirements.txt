@@ -4,3 +4,4 @@ websockets
 aiohttp
 logging
 python-dotenv
+jinja2
