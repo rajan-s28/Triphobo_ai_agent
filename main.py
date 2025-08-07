@@ -2,6 +2,8 @@ import os
 import json
 import aiohttp
 import logging
+import re
+from typing import List, Dict
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -20,16 +22,20 @@ logger = logging.getLogger("vapi-app")
 
 VAPI_PRIVATE_KEY = os.getenv("VAPI_PRIVATE_KEY", "")
 VAPI_ASSISTANT_ID = os.getenv("VAPI_ASSISTANT_ID", "")
+UNSPLASH_ACCESS_KEY = os.getenv("UNSPLASH_ACCESS_KEY", "")
 VAPI_BASE_URL = "https://api.vapi.ai"
+UNSPLASH_BASE_URL = "https://api.unsplash.com"
 
 if not VAPI_PRIVATE_KEY:
     logger.error("VAPI_PRIVATE_KEY is not set in environment variables")
 if not VAPI_ASSISTANT_ID:
     logger.error("VAPI_ASSISTANT_ID is not set in environment variables")
+if not UNSPLASH_ACCESS_KEY:
+    logger.error("UNSPLASH_ACCESS_KEY is not set in environment variables")
 
 app = FastAPI(
     title="Vapi Voice Assistant",
-    description="Real-time voice assistant using Vapi WebSocket API",
+    description="Real-time voice assistant using Vapi WebSocket API with Unsplash integration",
     version="1.0.0"
 )
 
@@ -44,6 +50,68 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+# Common destination keywords and their variations
+DESTINATION_KEYWORDS = {
+    'cities': [
+        'paris', 'london', 'new york', 'tokyo', 'rome', 'barcelona', 'amsterdam',
+        'berlin', 'prague', 'vienna', 'budapest', 'dubai', 'singapore', 'hong kong',
+        'sydney', 'melbourne', 'san francisco', 'los angeles', 'chicago', 'miami',
+        'madrid', 'lisbon', 'stockholm', 'copenhagen', 'oslo', 'helsinki', 'zurich',
+        'geneva', 'milan', 'florence', 'venice', 'naples', 'athens', 'istanbul',
+        'cairo', 'marrakech', 'casablanca', 'cape town', 'johannesburg', 'mumbai',
+        'delhi', 'bangalore', 'bangkok', 'phuket', 'bali', 'jakarta', 'manila',
+        'seoul', 'busan', 'beijing', 'shanghai', 'guangzhou', 'taipei', 'kyoto',
+        'osaka', 'hiroshima', 'sapporo'
+    ],
+    'countries': [
+        'france', 'italy', 'spain', 'greece', 'turkey', 'egypt', 'morocco',
+        'south africa', 'kenya', 'tanzania', 'india', 'thailand', 'vietnam',
+        'cambodia', 'laos', 'myanmar', 'indonesia', 'malaysia', 'philippines',
+        'singapore', 'japan', 'south korea', 'china', 'taiwan', 'australia',
+        'new zealand', 'brazil', 'argentina', 'chile', 'peru', 'colombia',
+        'mexico', 'costa rica', 'panama', 'canada', 'united states', 'usa',
+        'united kingdom', 'uk', 'germany', 'netherlands', 'belgium', 'austria',
+        'switzerland', 'sweden', 'norway', 'denmark', 'finland', 'iceland',
+        'portugal', 'czech republic', 'hungary', 'poland', 'croatia', 'slovenia'
+    ],
+    'landmarks': [
+        'eiffel tower', 'statue of liberty', 'big ben', 'colosseum', 'acropolis',
+        'taj mahal', 'great wall', 'machu picchu', 'christ the redeemer',
+        'petra', 'angkor wat', 'borobudur', 'chichen itza', 'neuschwanstein',
+        'mount rushmore', 'golden gate bridge', 'sydney opera house',
+        'burj khalifa', 'sagrada familia', 'louvre', 'vatican', 'buckingham palace'
+    ],
+    'regions': [
+        'tuscany', 'provence', 'bavaria', 'andalusia', 'catalonia', 'patagonia',
+        'amazonia', 'sahara', 'sahel', 'maghreb', 'scandinavia', 'balkans',
+        'caucasus', 'siberia', 'himalayas', 'alps', 'andes', 'rockies',
+        'caribbean', 'mediterranean', 'baltic', 'adriatic', 'aegean'
+    ]
+}
+
+def extract_destinations(text: str) -> List[str]:
+    """Extract potential destination names from text using keyword matching."""
+    text_lower = text.lower()
+    found_destinations = []
+
+    # Check all categories of destinations
+    for category, destinations in DESTINATION_KEYWORDS.items():
+        for destination in destinations:
+            # Use word boundary regex to avoid partial matches
+            pattern = r'\b' + re.escape(destination) + r'\b'
+            if re.search(pattern, text_lower):
+                found_destinations.append(destination.title())
+
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_destinations = []
+    for dest in found_destinations:
+        if dest.lower() not in seen:
+            seen.add(dest.lower())
+            unique_destinations.append(dest)
+
+    return unique_destinations
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -52,7 +120,8 @@ async def index(request: Request):
 async def health_check():
     return {
         "status": "healthy",
-        "vapi_configured": bool(VAPI_PRIVATE_KEY and VAPI_ASSISTANT_ID)
+        "vapi_configured": bool(VAPI_PRIVATE_KEY and VAPI_ASSISTANT_ID),
+        "unsplash_configured": bool(UNSPLASH_ACCESS_KEY)
     }
 
 @app.get("/make_call")
@@ -139,11 +208,107 @@ async def make_call():
             detail="Internal server error"
         )
 
+@app.post("/extract-destinations")
+async def extract_destinations_endpoint(request: Request):
+    """Extract destinations from provided text."""
+    try:
+        data = await request.json()
+        text = data.get("text", "")
+
+        if not text:
+            return {"destinations": []}
+
+        destinations = extract_destinations(text)
+        logger.info(f"Extracted destinations from text: {destinations}")
+
+        return {"destinations": destinations}
+
+    except Exception as e:
+        logger.error(f"Error extracting destinations: {e}")
+        raise HTTPException(status_code=500, detail="Failed to extract destinations")
+
+@app.get("/destination-photos/{destination}")
+async def get_destination_photos(destination: str, count: int = 6):
+    """Get photos for a specific destination from Unsplash."""
+    if not UNSPLASH_ACCESS_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="Unsplash API key not configured"
+        )
+
+    try:
+        headers = {
+            "Authorization": f"Client-ID {UNSPLASH_ACCESS_KEY}",
+            "Accept-Version": "v1"
+        }
+
+        # Create search query - add travel-related terms for better results
+        search_query = f"{destination} travel destination landmark"
+
+        params = {
+            "query": search_query,
+            "per_page": min(count, 30),  # Unsplash max is 30
+            "orientation": "landscape",
+            "content_filter": "high",
+            "order_by": "relevant"
+        }
+
+        timeout = aiohttp.ClientTimeout(total=15)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(
+                f"{UNSPLASH_BASE_URL}/search/photos",
+                headers=headers,
+                params=params
+            ) as response:
+
+                if response.status != 200:
+                    logger.error(f"Unsplash API error: {response.status}")
+                    raise HTTPException(
+                        status_code=response.status,
+                        detail="Failed to fetch photos from Unsplash"
+                    )
+
+                data = await response.json()
+                photos = []
+
+                for photo in data.get("results", []):
+                    photos.append({
+                        "id": photo["id"],
+                        "url": photo["urls"]["regular"],
+                        "thumb": photo["urls"]["small"],
+                        "alt": photo.get("alt_description") or f"{destination} travel photo",
+                        "photographer": photo["user"]["name"],
+                        "photographer_url": photo["user"]["links"]["html"],
+                        "download_location": photo["links"]["download_location"]
+                    })
+
+                logger.info(f"Retrieved {len(photos)} photos for destination: {destination}")
+
+                return {
+                    "destination": destination,
+                    "photos": photos,
+                    "total": len(photos)
+                }
+
+    except aiohttp.ClientError as e:
+        logger.error(f"Network error when calling Unsplash API: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Network error connecting to Unsplash API"
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error in get_destination_photos: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
+
 @app.get("/config")
 async def get_config():
     return {
         "hasPrivateKey": bool(VAPI_PRIVATE_KEY),
         "hasAssistantId": bool(VAPI_ASSISTANT_ID),
+        "hasUnsplashKey": bool(UNSPLASH_ACCESS_KEY),
         "baseUrl": VAPI_BASE_URL
     }
 

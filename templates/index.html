@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>TripHobo AI Travel Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,10 +16,52 @@
             }
         }
     </script>
+    <style>
+        .avatar-container {
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .avatar-slide-left {
+            transform: translateX(-120px);
+        }
+        .photo-gallery {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%) translateX(100%);
+            width: 240px;
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .photo-gallery.active {
+            transform: translateY(-50%) translateX(0);
+            opacity: 1;
+        }
+        .photo-card {
+            display: none;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .photo-card.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .avatar-photo-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 300px;
+        }
+    </style>
 </head>
-
 <body class="bg-gradient-to-br from-triphobo-blue via-triphobo-light to-triphobo-blue min-h-screen">
-
     <!-- Header -->
     <header class="bg-white/95 backdrop-blur-sm shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -29,8 +70,7 @@
                 <h1 class="text-2xl font-bold text-triphobo-blue">TripHobo AI</h1>
             </div>
             <div class="flex space-x-4">
-                <button
-                    class="px-4 py-2 border-2 border-triphobo-blue text-triphobo-blue rounded-lg hover:bg-triphobo-blue hover:text-white transition-all">
+                <button class="px-4 py-2 border-2 border-triphobo-blue text-triphobo-blue rounded-lg hover:bg-triphobo-blue hover:text-white transition-all">
                     Log in
                 </button>
                 <button class="px-4 py-2 bg-triphobo-green text-white rounded-lg hover:bg-green-600 transition-all">
@@ -43,44 +83,39 @@
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto p-6">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[calc(100vh-120px)]">
-
             <!-- Left Side - Avatar & Controls -->
-            <div class="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center justify-center">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center justify-center relative">
                 <div class="text-center mb-8">
                     <h2 class="text-3xl font-bold text-triphobo-blue mb-4">Hi, I'm Maya!</h2>
                     <p class="text-gray-600 text-lg">Your AI travel planning assistant</p>
                 </div>
-
-                <!-- Avatar -->
-                <div class="mb-8">
-                    <img id="avatar" src="" alt="Maya AI Assistant"
-                        class="w-48 h-48 rounded-full border-4 border-triphobo-green shadow-xl object-cover hover:scale-105 transition-transform">
+                <!-- Avatar and Photo Gallery Container -->
+                <div class="avatar-photo-container">
+                    <div id="avatar-container" class="avatar-container z-10">
+                        <img id="avatar" src="/static/img/avatar_static_2.png" alt="Maya AI Assistant" class="w-48 h-48 rounded-full border-4 border-triphobo-green shadow-xl object-cover hover:scale-105 transition-transform">
+                    </div>
+                    <div id="photo-gallery" class="photo-gallery z-20">
+                        <!-- Photos will be dynamically inserted here -->
+                    </div>
                 </div>
-
                 <!-- Controls -->
-                <div class="flex flex-col space-y-4 w-full max-w-sm">
-                    <button id="startBtn" onclick="startCall()"
-                        class="bg-gradient-to-r from-triphobo-green to-green-500 text-white font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all">
+                <div class="flex flex-col space-y-4 w-full max-w-sm mt-8">
+                    <button id="startBtn" onclick="startCall()" class="bg-gradient-to-r from-triphobo-green to-green-500 text-white font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all">
                         🎙️ Start Conversation
                     </button>
-                    <button id="stopBtn" onclick="stopCall()" disabled
-                        class="bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                    <button id="stopBtn" onclick="stopCall()" disabled class="bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
                         ⏹️ Stop Conversation
                     </button>
                 </div>
-
                 <!-- Status -->
-                <div id="status"
-                    class="mt-6 px-6 py-3 rounded-full font-semibold text-center w-full max-w-sm bg-red-100 text-red-800 border border-red-200">
+                <div id="status" class="mt-6 px-6 py-3 rounded-full font-semibold text-center w-full max-w-sm bg-red-100 text-red-800 border border-red-200">
                     Ready to help you plan your adventure
                 </div>
-
                 <!-- Debug Toggle -->
                 <button onclick="toggleDebug()" class="mt-6 text-sm text-gray-500 hover:text-gray-700 underline">
                     Toggle Debug Logs
                 </button>
             </div>
-
             <!-- Right Side - Conversation -->
             <div class="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
                 <!-- Chat Header -->
@@ -89,17 +124,13 @@
                         💬 Conversation with Maya
                     </h3>
                 </div>
-
                 <!-- Chat Messages -->
                 <div class="flex-1 overflow-y-auto p-6 bg-gray-50" id="transcript-container">
                     <div id="transcript" class="space-y-4">
-                        <!-- Initial message -->
                         <div class="chat-message assistant flex justify-start">
-                            <div
-                                class="message-bubble max-w-xs lg:max-w-md px-4 py-3 rounded-2xl rounded-bl-md bg-white border border-gray-200 shadow-sm">
+                            <div class="message-bubble max-w-xs lg:max-w-md px-4 py-3 rounded-2xl rounded-bl-md bg-white border border-gray-200 shadow-sm">
                                 <div class="message-header text-xs font-semibold text-triphobo-green mb-1">Maya</div>
-                                <div class="message-text text-sm text-gray-800">Hi there! Click "Start Conversation" and
-                                    tell me about your dream trip. Where would you like to go? 🌟</div>
+                                <div class="message-text text-sm text-gray-800">Hi there! Click "Start Conversation" and tell me about your dream trip. Where would you like to go? 🌟</div>
                                 <div class="message-time text-xs text-gray-500 mt-2">Ready to start</div>
                             </div>
                         </div>
@@ -107,10 +138,8 @@
                 </div>
             </div>
         </div>
-
         <!-- Debug Logs -->
-        <div id="debugLogs"
-            class="hidden mt-6 bg-black text-green-400 p-4 rounded-lg font-mono text-sm max-h-64 overflow-y-auto"></div>
+        <div id="debugLogs" class="hidden mt-6 bg-black text-green-400 p-4 rounded-lg font-mono text-sm max-h-64 overflow-y-auto"></div>
     </div>
 
     <script type="module">
@@ -122,6 +151,11 @@
         let inputWorkletNode;
         let assistantSpeakingTimeout;
         let isAssistantSpeaking = false;
+        let currentDestinations = new Set();
+        let photoCycleInterval;
+        let currentPhotos = [];
+        let currentPhotoIndex = 0;
+        let photoDisplayTimeout;
 
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
@@ -129,6 +163,8 @@
         const transcriptEl = document.getElementById('transcript');
         const transcriptContainer = document.getElementById('transcript-container');
         const debugLogsEl = document.getElementById('debugLogs');
+        const photoGallery = document.getElementById('photo-gallery');
+        const avatarContainer = document.getElementById('avatar-container');
 
         const avatarImg = document.getElementById('avatar');
         const animatedAvatarSrc = "/static/img/avatar3.gif";
@@ -140,50 +176,35 @@
 
         window.updateStatus = function (message, connected = false) {
             statusEl.textContent = message;
-            if (connected) {
-                statusEl.className = 'mt-6 px-6 py-3 rounded-full font-semibold text-center w-full max-w-sm bg-green-100 text-green-800 border border-green-200';
-            } else {
-                statusEl.className = 'mt-6 px-6 py-3 rounded-full font-semibold text-center w-full max-w-sm bg-red-100 text-red-800 border border-red-200';
-            }
+            statusEl.className = `mt-6 px-6 py-3 rounded-full font-semibold text-center w-full max-w-sm ${connected ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}`;
             startBtn.disabled = connected;
             stopBtn.disabled = !connected;
         }
 
-        window.addToTranscript = function (role, text, timestamp = null) {
+        window.addToTranscript = async function (role, text, timestamp = null) {
             const chatMessage = document.createElement('div');
             chatMessage.className = `chat-message ${role} flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
-
             const messageBubble = document.createElement('div');
-            messageBubble.className = `message-bubble max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${role === 'user'
-                    ? 'rounded-br-md bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-                    : 'rounded-bl-md bg-white border border-gray-200'
-                }`;
-
+            messageBubble.className = `message-bubble max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${role === 'user' ? 'rounded-br-md bg-gradient-to-r from-blue-500 to-blue-600 text-white' : 'rounded-bl-md bg-white border border-gray-200'}`;
             const messageHeader = document.createElement('div');
-            messageHeader.className = `message-header text-xs font-semibold mb-1 ${role === 'user' ? 'text-blue-100' : 'text-triphobo-green'
-                }`;
+            messageHeader.className = `message-header text-xs font-semibold mb-1 ${role === 'user' ? 'text-blue-100' : 'text-triphobo-green'}`;
             messageHeader.textContent = role === 'user' ? 'You' : 'Maya';
-
             const messageText = document.createElement('div');
-            messageText.className = `message-text text-sm ${role === 'user' ? 'text-white' : 'text-gray-800'
-                }`;
+            messageText.className = `message-text text-sm ${role === 'user' ? 'text-white' : 'text-gray-800'}`;
             messageText.textContent = text;
-
             const messageTime = document.createElement('div');
-            messageTime.className = `message-time text-xs mt-2 ${role === 'user' ? 'text-blue-200' : 'text-gray-500'
-                }`;
+            messageTime.className = `message-time text-xs mt-2 ${role === 'user' ? 'text-blue-200' : 'text-gray-500'}`;
             messageTime.textContent = timestamp || new Date().toLocaleTimeString();
-
             messageBubble.appendChild(messageHeader);
             messageBubble.appendChild(messageText);
             messageBubble.appendChild(messageTime);
             chatMessage.appendChild(messageBubble);
-
             transcriptEl.appendChild(chatMessage);
+            transcriptContainer.scrollTo({ top: transcriptContainer.scrollHeight, behavior: 'smooth' });
 
-            setTimeout(() => {
-                transcriptContainer.scrollTo({ top: transcriptContainer.scrollHeight, behavior: 'smooth' });
-            }, 100);
+            if (role === 'assistant') {
+                await fetchDestinations(text);
+            }
         }
 
         window.debugLog = function (message, data = null) {
@@ -204,18 +225,132 @@
             debugLogsEl.classList.toggle('hidden', !showDebug);
         }
 
+        async function fetchDestinations(text) {
+            try {
+                const response = await fetch('/extract-destinations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                if (!response.ok) throw new Error('Failed to extract destinations');
+                const { destinations } = await response.json();
+                if (destinations.length > 0) {
+                    debugLog('Extracted destinations', destinations);
+                    const latestDestination = destinations[destinations.length - 1];
+                    if (!currentDestinations.has(latestDestination)) {
+                        currentDestinations.clear();
+                        currentDestinations.add(latestDestination);
+                        await fetchPhotos(latestDestination);
+                    }
+                }
+            } catch (error) {
+                debugLog('Error fetching destinations', error);
+            }
+        }
+
+        async function fetchPhotos(destination) {
+            try {
+                clearPhotoCycle();
+                const response = await fetch(`/destination-photos/${encodeURIComponent(destination)}?count=5`);
+                if (!response.ok) throw new Error('Failed to fetch photos');
+                const { photos } = await response.json();
+                if (photos.length > 0) {
+                    currentPhotos = photos;
+                    currentPhotoIndex = 0;
+                    displayPhotos(destination, photos);
+                    startPhotoCycle();
+                }
+            } catch (error) {
+                debugLog('Error fetching photos', error);
+            }
+        }
+
+        function displayPhotos(destination, photos) {
+            photoGallery.innerHTML = '';
+            photos.forEach((photo, index) => {
+                const photoCard = document.createElement('div');
+                photoCard.className = `photo-card ${index === 0 ? 'active' : ''}`;
+                photoCard.innerHTML = `
+                    <img src="${photo.thumb}" alt="${photo.alt}" class="w-full h-56 object-cover">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent text-white p-3">
+                        <p class="text-sm font-bold">${destination}</p>
+                        <p class="text-xs opacity-90">Photo by <a href="${photo.photographer_url}" target="_blank" class="underline hover:text-blue-300">${photo.photographer}</a></p>
+                    </div>
+                `;
+                photoGallery.appendChild(photoCard);
+            });
+
+            // Slide avatar left and show gallery
+            avatarContainer.classList.add('avatar-slide-left');
+
+            // Small delay to ensure avatar animation starts first
+            setTimeout(() => {
+                photoGallery.classList.add('active');
+            }, 200);
+        }
+
+        function startPhotoCycle() {
+            let photosShown = 0;
+            const maxPhotos = Math.min(currentPhotos.length, 5);
+
+            photoCycleInterval = setInterval(() => {
+                const photoCards = photoGallery.querySelectorAll('.photo-card');
+                if (currentPhotoIndex >= photoCards.length) currentPhotoIndex = 0;
+
+                photoCards.forEach((card, index) => {
+                    card.classList.toggle('active', index === currentPhotoIndex);
+                });
+
+                currentPhotoIndex++;
+                photosShown++;
+
+                if (photosShown >= maxPhotos) {
+                    clearPhotoCycle();
+                    // Set timeout to hide gallery after showing all photos
+                    photoDisplayTimeout = setTimeout(() => {
+                        resetGallery();
+                    }, 1000); // Small delay before hiding
+                }
+            }, 6000); // Changed from 3000 to 6000 milliseconds (6 seconds)
+        }
+
+        function clearPhotoCycle() {
+            if (photoCycleInterval) {
+                clearInterval(photoCycleInterval);
+                photoCycleInterval = null;
+            }
+            if (photoDisplayTimeout) {
+                clearTimeout(photoDisplayTimeout);
+                photoDisplayTimeout = null;
+            }
+        }
+
+        function resetGallery() {
+            // Hide gallery first
+            photoGallery.classList.remove('active');
+
+            // After gallery animation completes, slide avatar back
+            setTimeout(() => {
+                avatarContainer.classList.remove('avatar-slide-left');
+
+                // Clear gallery content after animations complete
+                setTimeout(() => {
+                    photoGallery.innerHTML = '';
+                    currentPhotos = [];
+                    currentPhotoIndex = 0;
+                    currentDestinations.clear();
+                }, 400);
+            }, 400);
+        }
+
         function setAvatarSpeaking(speaking) {
             if (speaking && !isAssistantSpeaking) {
                 isAssistantSpeaking = true;
-                if (avatarImg) {
-                    avatarImg.src = animatedAvatarSrc;
-                }
+                if (avatarImg) avatarImg.src = animatedAvatarSrc;
                 debugLog("Avatar started speaking animation");
             } else if (!speaking && isAssistantSpeaking) {
                 isAssistantSpeaking = false;
-                if (avatarImg) {
-                    avatarImg.src = staticAvatarSrc;
-                }
+                if (avatarImg) avatarImg.src = staticAvatarSrc;
                 debugLog("Avatar stopped speaking animation");
             }
         }
@@ -225,12 +360,10 @@
                 audioContext = new AudioContext({ sampleRate: 16000 });
                 await audioContext.resume();
             }
-
             await audioContext.audioWorklet.addModule('/static/js/audio-output-worklet.js');
             outputWorkletNode = new AudioWorkletNode(audioContext, 'audio-output-processor');
             outputWorkletNode.connect(audioContext.destination);
             debugLog('Audio output worklet is ready.');
-
             await audioContext.audioWorklet.addModule('/static/js/audio-input-worklet.js');
             micStream = await navigator.mediaDevices.getUserMedia({
                 audio: {
@@ -242,13 +375,11 @@
             });
             const micSourceNode = audioContext.createMediaStreamSource(micStream);
             inputWorkletNode = new AudioWorkletNode(audioContext, 'audio-input-processor');
-
             inputWorkletNode.port.onmessage = (event) => {
                 if (socket && socket.readyState === WebSocket.OPEN) {
                     socket.send(event.data);
                 }
             };
-
             micSourceNode.connect(inputWorkletNode);
             debugLog('Audio input worklet is ready and listening to microphone.');
         }
@@ -257,23 +388,16 @@
             try {
                 updateStatus("Connecting to Maya...", false);
                 debugLog("Initiating call request");
-
                 const res = await fetch("/make_call");
                 if (!res.ok) {
                     const error = await res.json();
                     throw new Error(error.detail || "Failed to create call");
                 }
                 const data = await res.json();
-
-                if (!data.url) {
-                    throw new Error("No WebSocket URL received");
-                }
-
+                if (!data.url) throw new Error("No WebSocket URL received");
                 debugLog("Received WebSocket URL", { url: data.url });
-
                 socket = new WebSocket(data.url);
                 socket.binaryType = "arraybuffer";
-
                 socket.onopen = async () => {
                     debugLog("WebSocket connection opened");
                     updateStatus("Setting up microphone...", true);
@@ -286,7 +410,6 @@
                         stopCall();
                     }
                 };
-
                 socket.onmessage = (event) => {
                     if (typeof event.data === "string") {
                         try {
@@ -301,18 +424,15 @@
                         }
                     }
                 };
-
                 socket.onerror = (error) => {
                     debugLog("WebSocket error", error);
                     updateStatus("Connection error - please try again", false);
                 };
-
                 socket.onclose = (event) => {
                     debugLog("WebSocket closed", { code: event.code, reason: event.reason });
                     updateStatus("Ready to help you plan your adventure", false);
                     cleanup();
                 };
-
             } catch (error) {
                 debugLog("Start call error", error);
                 updateStatus(`Failed to connect: ${error.message}`, false);
@@ -321,7 +441,6 @@
 
         function handleJsonMessage(msg) {
             debugLog("Received JSON message", msg);
-
             switch (msg.type) {
                 case 'speech-update':
                     if (msg.role === 'assistant') {
@@ -336,19 +455,16 @@
                         }
                     }
                     break;
-
                 case 'transcript':
                     if (msg.transcriptType === 'final' && msg.transcript) {
                         const role = msg.role === 'user' ? 'user' : 'assistant';
                         addToTranscript(role, msg.transcript);
                     }
                     break;
-
                 case 'error':
                     debugLog("Error message received", msg);
                     updateStatus(`Error: ${msg.message || 'Unknown error'}`, false);
                     break;
-
                 default:
                     break;
             }
@@ -364,9 +480,10 @@
             }
             cleanup();
             updateStatus("Ready to help you plan your adventure", false);
-
             setAvatarSpeaking(false);
             clearTimeout(assistantSpeakingTimeout);
+            clearPhotoCycle();
+            resetGallery();
         }
 
         function cleanup() {
@@ -399,5 +516,4 @@
         window.toggleDebug = toggleDebug;
     </script>
 </body>
-
 </html>
