@@ -61,7 +61,13 @@ DESTINATION_KEYWORDS = {
         'cairo', 'marrakech', 'casablanca', 'cape town', 'johannesburg', 'mumbai',
         'delhi', 'bangalore', 'bangkok', 'phuket', 'bali', 'jakarta', 'manila',
         'seoul', 'busan', 'beijing', 'shanghai', 'guangzhou', 'taipei', 'kyoto',
-        'osaka', 'hiroshima', 'sapporo'
+        'osaka', 'hiroshima', 'sapporo',
+        # ADD THESE MISSING CITIES:
+        'moscow', 'st petersburg', 'novosibirsk', 'yekaterinburg', 'sochi', 'kazan',
+        'goa', 'kochi', 'jaipur', 'agra', 'varanasi', 'udaipur', 'jodhpur',
+        'rishikesh', 'manali', 'shimla', 'darjeeling', 'gangtok', 'shillong',
+        'hyderabad', 'pune', 'ahmedabad', 'kolkata', 'chandigarh', 'lucknow',
+        # Add more cities as needed
     ],
     'countries': [
         'france', 'italy', 'spain', 'greece', 'turkey', 'egypt', 'morocco',
@@ -72,7 +78,9 @@ DESTINATION_KEYWORDS = {
         'mexico', 'costa rica', 'panama', 'canada', 'united states', 'usa',
         'united kingdom', 'uk', 'germany', 'netherlands', 'belgium', 'austria',
         'switzerland', 'sweden', 'norway', 'denmark', 'finland', 'iceland',
-        'portugal', 'czech republic', 'hungary', 'poland', 'croatia', 'slovenia'
+        'portugal', 'czech republic', 'hungary', 'poland', 'croatia', 'slovenia',
+        # ADD THESE:
+        'russia', 'ukraine', 'belarus', 'estonia', 'latvia', 'lithuania', 'indonesia'
     ],
     'landmarks': [
         'eiffel tower', 'statue of liberty', 'big ben', 'colosseum', 'acropolis',
